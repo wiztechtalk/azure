@@ -1,0 +1,66 @@
+----------------------------------------------
+Lab: Setup Web server on a Linux VM in Azure
+-----------------------------------------------
+
+ssh-keygen -m PEM -t rsa -b 4096
+
+az vm create -n test-vm-eus-web1 -g learn-03afb66b-75e7-4786-a412-484e795d59da -l eastus --image UbuntuLTS --admin-username azureuser --verbose --no-wait
+
+az disk create -n testOSdisk1 -l eastus -g learn-03afb66b-75e7-4786-a412-484e795d59da --size-gb 1024
+
+az vm disk attach --vm-name test-vm-eus-web1 --ids /subscription/[subid]/resourceGroups/[rgname]/providers/[providername]/disks/[diskname]
+
+ssh-copy-id -i ~/.ssh/id_rsa.pub [username]@[myvm]
+
+ssh [username]@[myvm]
+
+lsblk
+sudo fdisk /dev/sdc
+sudo mkfs /dev/sdc1
+sudo mkdir /data && sudo mount /dev/sdc1 /data
+sudo apt-get update
+sudo apt-get install apache2 -y
+sudo systemctl status apache2 --no-pager
+
+
+az vm open-port -n test-vm-eus-web1 --port 80 -g [rgname]
+
+
+-----------------------------------------------------
+Lab: Setup a Video Processor on a Windows VM in Azure
+------------------------------------------------------
+
+az vm create -n test-vp-vm2 \
+             --image MicrosoftWindowsServer:WindowsServer:2019-Datacenter-smalldisk:latest \
+             --size Standard_D2s_v3 \
+             -l eastus -g learn-173e70b8-671e-471d-8e6c-266a12aa1722 \
+            --admin-username azureuser \
+            --verbose --no-wait
+
+az vm disk attach --vm-name test-vp-vm1 --new -n test-vp-vm1-datadisk1 --size-gb 1024 -g RGname --sku Standard_LRS
+
+RDP to server
+
+diskpart
+list disk
+select disk
+create partition primary
+create volume
+
+---------------------------------------------------
+Lab : Resize VM
+---------------------------------------------
+az vm size list -o table
+
+az vm list-vm-resize-options -n VM -g RG -o table
+
+az vm resize -n VM -g RG --size Standard_B1s
+
+az vm list-ip-addresses -o table
+
+az vm restart
+az vm stop
+az vm start
+az vm deallocate
+
+
