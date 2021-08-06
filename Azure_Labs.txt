@@ -63,4 +63,38 @@ az vm stop
 az vm start
 az vm deallocate
 
+----------------------------------------
+LAB: Add a data disk to a VM
+----------------------------------------
+az configure --defaults location=eastus group="myRG"
 
+az vm create --name myVM \
+              --image Canonical:UbuntuServer:16.04-LTS:latest \
+              --size Standard_DS1_v2 \
+              --admin-username azureuser \
+              --generate-ssh-keys
+
+az vm disk attach --name uploadDataDisk1 \
+            --vm-name support-web-vm01 \
+            --size-gb 64 \
+            --sku Premium_LRS \
+            --new
+
+ipaddress=$(az vm show \
+            --name support-web-vm01 \
+            --show-details \
+            --query [PublicIps] \
+            --output tsv)
+            
+ssh azureuser@$ipaddress lsblk
+
+az vm extension set \
+  --vm-name support-web-vm01 \
+  --name customScript \
+  --publisher Microsoft.Azure.Extensions \
+  --settings '{"fileUris":["https://raw.githubusercontent.com/MicrosoftDocs/mslearn-add-and-size-disks-in-azure-virtual-machines/master/add-data-disk.sh"]}' \
+  --protected-settings '{"commandToExecute": "./add-data-disk.sh"}'
+
+            
+            
+              
