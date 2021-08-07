@@ -95,6 +95,31 @@ az vm extension set \
   --settings '{"fileUris":["https://raw.githubusercontent.com/MicrosoftDocs/mslearn-add-and-size-disks-in-azure-virtual-machines/master/add-data-disk.sh"]}' \
   --protected-settings '{"commandToExecute": "./add-data-disk.sh"}'
 
-            
-            
-              
+
+------------------------------------------
+LAB: Resize a Data disk
+-------------------------------------------
+
+az disk list \
+    --query '[*].{Name:name,Size:diskSizeGb,Tier:sku.tier}' \
+    --output table
+
+az vm deallocate --name support-web-vm01
+
+az disk update --name uploadDataDisk1 \
+            --size-gb 128
+
+az vm start --name support-web-vm01
+
+az vm extension set \
+  --vm-name support-web-vm01 \
+  --name customScript \
+  --publisher Microsoft.Azure.Extensions \
+  --settings '{"fileUris":["https://raw.githubusercontent.com/MicrosoftDocs/mslearn-add-and-size-disks-in-azure-virtual-machines/master/resize-data-disk.sh"]}' \
+  --protected-settings '{"commandToExecute": "./resize-data-disk.sh"}'
+
+ipaddress=$(az vm show --name support-web-vm01 -d --query [publicIps] -o tsv)
+
+ssh azureuser@$ipaddress lsblk
+
+ssh azureuser@$ipaddress df -h
