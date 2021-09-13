@@ -1,0 +1,19 @@
+#Variables
+$RG = "RGNSG"
+$Location = "East US"
+$NSG = "AllowHTTP"
+
+#Create an NSG
+New-AzNetworkSecurityGroup -Name $NSG -Location $Location -ResourceGroupName $RG
+
+#Create a Rule
+New-AzNetworkSecurityRuleConfig -Name $NSG -Description "Allow HTTP" `
+  -Access Allow `
+  -Protocol Tcp `
+  -Direction Inbound `
+  -Priority 101 `
+  -SourceAddressPrefix Internet -SourcePortRange * `
+  -DestinationAddressPrefix * -DestinationPortRange 80
+  
+  #Remove a NSG
+  Remove-AzNetworkSecurityGroup -ResourceGroupName $RG -Name $NSG
