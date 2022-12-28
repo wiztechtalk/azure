@@ -2,100 +2,45 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "location": {
-            "value": "eastus"
+        "VM_name": {
+            "value": "StudentVM"
         },
-        "networkInterfaceName": {
-            "value": "studentvm987"
+        "VNET_name": {
+            "value": "StudentVM-VNet"
         },
-        "enableAcceleratedNetworking": {
-            "value": true
+        "VNet_AddressPrefix":{
+            "value": "192.168.0.0/24"
         },
-        "networkSecurityGroupName": {
-            "value": "StudentVM-nsg"
+        "Subnet_AddressPrefix":{
+            "value": "192.168.0.248/29"
         },
-        "networkSecurityGroupRules": {
-            "value": [
-                {
-                    "name": "RDP",
-                    "properties": {
-                        "priority": 300,
-                        "protocol": "TCP",
-                        "access": "Allow",
-                        "direction": "Inbound",
-                        "sourceAddressPrefix": "*",
-                        "sourcePortRange": "*",
-                        "destinationAddressPrefix": "*",
-                        "destinationPortRange": "3389"
-                    }
-                }
-            ]
+        "NIC_name": {
+            "value": "StudentVM-nic"
         },
-        "subnetName": {
-            "value": "StudentSubnet"
-        },
-        "virtualNetworkName": {
-            "value": "StudentVnet"
-        },
-        "addressPrefixes": {
-            "value": [
-                "192.168.0.0/24"
-            ]
-        },
-        "subnets": {
-            "value": [
-                {
-                    "name": "StudentSubnet",
-                    "properties": {
-                        "addressPrefix": "192.168.0.248/29"
-                    }
-                }
-            ]
-        },
-        "publicIpAddressName": {
+        "PIPA_name": {
             "value": "StudentVM-ip"
         },
-        "publicIpAddressType": {
-            "value": "Static"
+        "NSG_name": {
+            "value": "StudentVM-nsg"
         },
-        "publicIpAddressSku": {
-            "value": "Standard"
+        "ASG_name": {
+            "value": "StudentVM-asg"
         },
-        "pipDeleteOption": {
-            "value": "Delete"
-        },
-        "virtualMachineName": {
-            "value": "StudentVM"
-        },
-        "virtualMachineComputerName": {
-            "value": "StudentVM"
-        },
-        "virtualMachineRG": {
-            "value": "1-47370675-playground-sandbox"
-        },
-        "osDiskType": {
-            "value": "Standard_LRS"
-        },
-        "osDiskDeleteOption": {
-            "value": "Delete"
-        },
-        "virtualMachineSize": {
+        "VM_Size": {
             "value": "Standard_D2s_v3"
         },
-        "nicDeleteOption": {
-            "value": "Delete"
+        "VM_location":{
+            "value": "eastus"
         },
-        "adminUsername": {
-            "value": "Student"
+        "VM_Tag":{
+            "value":[
+                {
+                    "LAB":"Student"
+                    }
+                ]
         },
-        "adminPassword": {
-            "value": null
-        },
-        "patchMode": {
-            "value": "AutomaticByOS"
-        },
-        "enableHotpatching": {
-            "value": false
-        }
+        "My_Client_PIPA":{
+            "value": "8.8.8.8"
+        }         
     }
 }
