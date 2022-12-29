@@ -5,6 +5,12 @@
         "VM_name": {
             "value": "StudentVM"
         },
+        "Admin_username": {
+            "value": "Student"
+        },
+        "Admin_password": {
+            "value": "Pa55w.rd1234"
+        },
         "VNET_name": {
             "value": "StudentVM-VNet"
         },
