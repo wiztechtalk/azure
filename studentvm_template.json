@@ -1,250 +1,263 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
+    "contentVersion": "1.0.0.1",
     "parameters": {
-        "VM_name": {
-            "defaultValue": "StudentVM",
-            "type": "string"
+      "VM_name": {
+        "defaultValue": "StudentVM",
+        "type": "String",
+        "metadata": {
+          "description": "The Virtual Machine name"
+        }
+      },"adminUsername": {
+        "defaultValue": "Student",
+        "type": "String",
+        "metadata": {
+          "description": "The admin username to log into the Virtual Machine"
+        }
+      },"adminPassword": {
+        "defaultValue": "",
+        "type": "secureString",
+        "metadata": {
+          "description": "The admin password to log into the Virtual Machine"
+        }
+      },
+      "VNET_name": {
+        "defaultValue": "StudentVM-VNet",
+        "type": "String",
+        "metadata": {
+          "description": "The Virtual Network name"
+        }
+      },
+      "VNet_AddressPrefix": {
+        "defaultValue": "192.168.0.0/24",
+        "type": "String",
+        "metadata": {
+          "description": "The Virtual Network CIDR"
+        }
+      },
+      "Subnet_AddressPrefix": {
+        "defaultValue": "192.168.0.248/29",
+        "type": "String",
+        "metadata": {
+          "description": "The Subnet CIDR"
+        }
+      },
+      "NIC_name": {
+        "defaultValue": "StudentVM-nic",
+        "type": "String",
+        "metadata": {
+          "description": "The name of the Network Interface Card (NIC) of the VM"
+        }
+      },
+      "PIPA_name": {
+        "defaultValue": "StudentVM-ip",
+        "type": "String",
+        "metadata": {
+          "description": "The name of the Public IP Address assigned to VM"
+        }
+      },
+      "NSG_name": {
+        "defaultValue": "StudentVM-nsg",
+        "type": "String",
+        "metadata": {
+          "description": "The name of the Network Security Group assigned to the Subnet"
+        }
+      },
+      "ASG_name": {
+        "defaultValue": "StudentVM-asg",
+        "type": "String",
+        "metadata": {
+          "description": "The name of the Application Security Group assigned to VM"
+        }
+      },
+      "VM_Size": {
+        "defaultValue": "Standard_D2s_v3",
+        "type": "String",
+        "metadata": {
+          "description": "The Virtual Machine Disk Size name. Allowed size are Standard_D2s_v3"
+        }
+      },
+      "VM_location": {
+        "defaultValue": "eastus",
+        "allowedValues": [
+          "eastus",
+          "westus"
+        ],
+        "type": "String",
+        "metadata": {
+          "description": "The Region where all resources are stored for this deployment"
+        }
+      },
+      "VM_Tag": {
+        "defaultValue": {
+          "LAB": "Student"
         },
-        "VNET_name": {
-            "defaultValue": "StudentVM-VNet",
-            "type": "string"
-        },
-        "VNet_AddressPrefix":{
-            "defaultValue": "192.168.0.0/24",
-            "type": "string"
-        },
-        "Subnet_AddressPrefix":{
-            "defaultValue": "192.168.0.248/29",
-            "type": "string"
-        },
-        "NIC_name": {
-            "defaultValue": "StudentVM-nic",
-            "type": "string"
-        },
-        "PIPA_name": {
-            "defaultValue": "StudentVM-ip",
-            "type": "string"
-        },
-        "NSG_name": {
-            "defaultValue": "StudentVM-nsg",
-            "type": "string"
-        },
-        "ASG_name": {
-            "defaultValue": "StudentVM-asg",
-            "type": "string"
-        },
-        "VM_Size": {
-            "defaultValue": "Standard_D2s_v3",
-            "type": "string"
-        },
-        "VM_location":{
-            "defaultValue": "eastus",
-            "type": "string", 
-            "allowedValues": ["eastus","westus"]
-        },
-        "VM_Tag":{
-            "defaultValue":[
-                {
-                    "LAB":"Student"
-                    }
-                ],
-            "type": "array"
-        },
-        "My_Client_PIPA":{
-            "defaultValue": "8.8.8.8",
-            "type":"string"
-        }        
+        "type": "Object",
+        "metadata": {
+          "description": "The Tag used to identify all the resources linked to this Virtual Machine deployment"
+        }
+      },
+      "My_Client_PIPA": {
+        "defaultValue": "8.8.8.8",
+        "type": "String",
+        "metadata": {
+          "description": "The Client Computer Public IP Address to be allowed in the NSG RDP rule"
+        }
+      }
     },
-    "variables": {},
+    "variables": {
+      "var_domainNameLabel": "[toLower(parameters('VM_name'))]"
+    },
     "resources": [
-        {
-            "type": "Microsoft.Network/applicationSecurityGroups",
-            "apiVersion": "2022-05-01",
-            "name": "[parameters('ASG_name')]",
-            "location": "[parameters('VM_location')]",
-            "tags": "[parameters('VM_Tag')]",
-            "properties": {}
+      {
+        "type": "Microsoft.Network/applicationSecurityGroups",
+        "apiVersion": "2022-05-01",
+        "name": "[parameters('ASG_name')]",
+        "location": "[parameters('VM_location')]",
+        "tags": "[parameters('VM_Tag')]",
+        "properties": {}
+      },
+      {
+        "type": "Microsoft.Network/publicIPAddresses",
+        "apiVersion": "2022-05-01",
+        "name": "[parameters('PIPA_name')]",
+        "location": "[parameters('VM_location')]",
+        "tags": "[parameters('VM_Tag')]",
+        "sku": {
+          "name": "Standard",
+          "tier": "Regional"
         },
-        {
-            "type": "Microsoft.Network/publicIPAddresses",
-            "apiVersion": "2022-05-01",
-            "name": "[parameters('PIPA_name')]",
-            "location": "[parameters('VM_location')]",
-            "tags": "[parameters('VM_Tag')]",
-            "sku": {
-                "name": "Standard",
-                "tier": "Regional"
+        "properties": {
+          "ipAddress": "20.172.229.106",
+          "publicIPAddressVersion": "IPv4",
+          "publicIPAllocationMethod": "Static",
+          "idleTimeoutInMinutes": 4,
+          "dnsSettings": {
+            "domainNameLabel": "[variables('var_domainNameLabel')]",
+            "fqdn": "[concat(variables('var_domainNameLabel'), '.', parameters('VM_location'), '.cloudapp.azure.com')]"
+          },
+          "ipTags": []
+        }
+      },
+      {
+        "type": "Microsoft.Compute/virtualMachines",
+        "apiVersion": "2022-08-01",
+        "name": "[parameters('VM_name')]",
+        "location": "[parameters('VM_location')]",
+        "dependsOn": [
+          "[resourceId('Microsoft.Network/networkInterfaces', parameters('NIC_name'))]"
+        ],
+        "tags": "[parameters('VM_Tag')]",
+        "properties": {
+          "hardwareProfile": {
+            "vmSize": "[parameters('VM_Size')]"
+          },
+          "storageProfile": {
+            "imageReference": {
+              "publisher": "microsoftwindowsdesktop",
+              "offer": "windows-11",
+              "sku": "win11-21h2-pro",
+              "version": "latest"
             },
-            "properties": {
-                "ipAddress": "20.172.229.106",
-                "publicIPAddressVersion": "IPv4",
-                "publicIPAllocationMethod": "Dynamic",
-                "idleTimeoutInMinutes": 4,
-                "dnsSettings": {
-                    "domainNameLabel": "[parameters('VM_name')]",
-                    "fqdn": "[parameters('NIC_name')].[parameters('VM_location')].cloudapp.azure.com"
-                },
-                "ipTags": []
-            }
-        },
-        {
-            "type": "Microsoft.Compute/virtualMachines",
-            "apiVersion": "2022-08-01",
-            "name": "[parameters('VM_name')]",
-            "location": "[parameters('VM_location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/networkInterfaces', parameters('NIC_name'))]"
-            ],
-            "tags":"[parameters('VM_Tag')]",
-            "properties": {
-                "hardwareProfile": {
-                    "vmSize": "[parameters('VM_Size')]"
-                },
-                "storageProfile": {
-                    "imageReference": {
-                        "publisher": "microsoftwindowsdesktop",
-                        "offer": "windows-11",
-                        "sku": "win11-21h2-pro",
-                        "version": "latest"
-                    },
-                    "osDisk": {
-                        "osType": "Windows",
-                        "name": "[concat(parameters('VM_name'), '_OsDisk_1')]",
-                        "createOption": "FromImage",
-                        "caching": "ReadWrite",
-                        "managedDisk": {
-                            "storageAccountType": "Standard_LRS",
-                            "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('VM_name'), '_OsDisk_1'))]"
-                        },
-                        "deleteOption": "Delete",
-                        "diskSizeGB": 127
-                    },
-                    "dataDisks": []
-                },
-                "osProfile": {
-                    "computerName": "[parameters('VM_name')]",
-                    "adminUsername": "Student",
-                    "windowsConfiguration": {
-                        "provisionVMAgent": true,
-                        "enableAutomaticUpdates": true,
-                        "patchSettings": {
-                            "patchMode": "AutomaticByOS",
-                            "assessmentMode": "ImageDefault",
-                            "enableHotpatching": false
-                        },
-                        "enableVMAgentPlatformUpdates": false
-                    },
-                    "secrets": [],
-                    "allowExtensionOperations": true,
-                    "requireGuestProvisionSignal": true
-                },
-                "networkProfile": {
-                    "networkInterfaces": [
-                        {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('NIC_name'))]",
-                            "properties": {
-                                "deleteOption": "Delete"
-                            }
-                        }
-                    ]
-                },
-                "licenseType": "Windows_Client"
-            }
-        },
-        {
-            "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2022-05-01",
-            "name": "[parameters('VNET_name')]",
-            "location": "[parameters('VM_location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('VNET_name'), 'StudentSubnet')]"
-            ],
-            "tags": "[parameters('VM_Tag')]",
-            "properties": {
-                "addressSpace": {
-                    "addressPrefixes": [
-                        "[parameters('VNet_AddressPrefix')]"
-                    ]
-                },
-                "subnets": [
-                    {
-                        "name": "StudentSubnet",
-                        "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('VNET_name'), 'StudentSubnet')]",
-                        "properties": {
-                            "addressPrefix": "[parameters('Subnet_AddressPrefix')]",
-                            "delegations": [],
-                            "privateEndpointNetworkPolicies": "Disabled",
-                            "privateLinkServiceNetworkPolicies": "Enabled"
-                        },
-                        "type": "Microsoft.Network/virtualNetworks/subnets"
-                    }
-                ],
-                "virtualNetworkPeerings": [],
-                "enableDdosProtection": false
-            }
-        },
-        {
-            "type": "Microsoft.Network/virtualNetworks/subnets",
-            "apiVersion": "2022-05-01",
-            "name": "[concat(parameters('VNET_name'), '/StudentSubnet')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('VNET_name'))]"
-            ],
-            "properties": {
+            "osDisk": {
+              "createOption": "FromImage",
+              "managedDisk": {
+                "storageAccountType": "Standard_LRS"
+              },
+              "deleteOption": "Delete",
+              "diskSizeGB": 127
+            },
+            "dataDisks": []
+          },
+          "osProfile": {
+            "computerName": "[parameters('VM_name')]",
+            "adminUsername": "[parameters('adminUsername')]",
+            "adminPassword": "[parameters('adminPassword')]",
+            "windowsConfiguration": {
+              "provisionVMAgent": true,
+              "enableAutomaticUpdates": true,
+              "patchSettings": {
+                "patchMode": "AutomaticByOS",
+                "assessmentMode": "ImageDefault",
+                "enableHotpatching": false
+              },
+              "enableVMAgentPlatformUpdates": false
+            },
+            "secrets": [],
+            "allowExtensionOperations": true
+          },
+          "networkProfile": {
+            "networkInterfaces": [
+              {
+                "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('NIC_name'))]",
+                "properties": {
+                  "deleteOption": "Delete"
+                }
+              }
+            ]
+          },
+          "licenseType": "Windows_Client"
+        }
+      },
+      {
+        "type": "Microsoft.Network/virtualNetworks",
+        "apiVersion": "2022-05-01",
+        "name": "[parameters('VNET_name')]",
+        "location": "[parameters('VM_location')]",
+        "tags": "[parameters('VM_Tag')]",
+        "properties": {
+          "addressSpace": {
+            "addressPrefixes": [
+              "[parameters('VNet_AddressPrefix')]"
+            ]
+          },
+          "subnets": [
+            {
+              "name": "StudentSubnet",
+              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('VNET_name'), 'StudentSubnet')]",
+              "properties": {
                 "addressPrefix": "[parameters('Subnet_AddressPrefix')]",
                 "delegations": [],
                 "privateEndpointNetworkPolicies": "Disabled",
                 "privateLinkServiceNetworkPolicies": "Enabled"
+              },
+              "type": "Microsoft.Network/virtualNetworks/subnets"
             }
-        },
-        {
-            "type": "Microsoft.Network/networkSecurityGroups",
-            "apiVersion": "2022-05-01",
-            "name": "[parameters('NSG_name')]",
-            "location": "[parameters('VM_location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', parameters('NSG_name'), 'RDP')]",
-                "[resourceId('Microsoft.Network/applicationSecurityGroups', parameters('ASG_name'))]"
-            ],
-            "tags": "[parameters('VM_Tag')]",
-            "properties": {
-                "securityRules": [
-                    {
-                        "name": "RDP",
-                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', parameters('NSG_name'), 'RDP')]",
-                        "type": "Microsoft.Network/networkSecurityGroups/securityRules",
-                        "properties": {
-                            "protocol": "TCP",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "3389",
-                            "sourceAddressPrefix": "[parameters('My_Client_PIPA')]",
-                            "access": "Allow",
-                            "priority": 300,
-                            "direction": "Inbound",
-                            "sourcePortRanges": [],
-                            "destinationPortRanges": [],
-                            "sourceAddressPrefixes": [],
-                            "destinationAddressPrefixes": [],
-                            "destinationApplicationSecurityGroups": [
-                                {
-                                    "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', parameters('ASG_name'))]"
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
-            "apiVersion": "2022-05-01",
-            "name": "[concat(parameters('NSG_name'), '/RDP')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('NSG_name'))]",
-                "[resourceId('Microsoft.Network/applicationSecurityGroups', parameters('ASG_name'))]"
-            ],
-            "properties": {
+          ],
+          "virtualNetworkPeerings": [],
+          "enableDdosProtection": false
+        }
+      },
+      {
+        "type": "Microsoft.Network/virtualNetworks/subnets",
+        "apiVersion": "2022-05-01",
+        "name": "[concat(parameters('VNET_name'), '/StudentSubnet')]",
+        "dependsOn": [
+          "[resourceId('Microsoft.Network/virtualNetworks', parameters('VNET_name'))]"
+        ],
+        "properties": {
+          "addressPrefix": "[parameters('Subnet_AddressPrefix')]",
+          "delegations": [],
+          "privateEndpointNetworkPolicies": "Disabled",
+          "privateLinkServiceNetworkPolicies": "Enabled"
+        }
+      },
+      {
+        "type": "Microsoft.Network/networkSecurityGroups",
+        "apiVersion": "2022-05-01",
+        "name": "[parameters('NSG_name')]",
+        "location": "[parameters('VM_location')]",
+        "dependsOn": [
+          "[resourceId('Microsoft.Network/applicationSecurityGroups', parameters('ASG_name'))]"
+        ],
+        "tags": "[parameters('VM_Tag')]",
+        "properties": {
+          "securityRules": [
+            {
+              "name": "RDP",
+              "id": "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', parameters('NSG_name'), 'RDP')]",
+              "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+              "properties": {
                 "protocol": "TCP",
                 "sourcePortRange": "*",
                 "destinationPortRange": "3389",
@@ -257,81 +270,111 @@
                 "sourceAddressPrefixes": [],
                 "destinationAddressPrefixes": [],
                 "destinationApplicationSecurityGroups": [
-                    {
-                        "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', parameters('ASG_name'))]"
-                    }
+                  {
+                    "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', parameters('ASG_name'))]"
+                  }
                 ]
+              }
             }
-        },
-        {
-            "type": "Microsoft.Network/networkInterfaces",
-            "apiVersion": "2022-05-01",
-            "name": "[parameters('NIC_name')]",
-            "location": "[parameters('VM_location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('PIPA_name'))]",
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('VNET_name'), 'StudentSubnet')]",
-                "[resourceId('Microsoft.Network/applicationSecurityGroups', parameters('ASG_name'))]",
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('NSG_name'))]"
-            ],
-            "tags": "[parameters('VM_Tag')]",
-            "kind": "Regular",
-            "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "ipconfig1",
-                        "id": "[concat(resourceId('Microsoft.Network/networkInterfaces', parameters('NIC_name')), '/ipConfigurations/ipconfig1')]",
-                        "etag": "W/\"b9fa8dfd-8f3e-4d9a-9fd1-6037b5274d9d\"",
-                        "type": "Microsoft.Network/networkInterfaces/ipConfigurations",
-                        "properties": {
-                            "provisioningState": "Succeeded",
-                            "privateIPAddress": "192.168.0.252",
-                            "privateIPAllocationMethod": "Dynamic",
-                            "publicIPAddress": {
-                                "name": "StudentVM-ip",
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('PIPA_name'))]",
-                                "properties": {
-                                    "provisioningState": "Succeeded",
-                                    "resourceGuid": "ba49bfff-992f-4088-81c6-0a40bf964dcd",
-                                    "publicIPAddressVersion": "IPv4",
-                                    "publicIPAllocationMethod": "Dynamic",
-                                    "idleTimeoutInMinutes": 4,
-                                    "ipTags": [],
-                                    "ipConfiguration": {
-                                        "id": "[concat(resourceId('Microsoft.Network/networkInterfaces', parameters('NIC_name')), '/ipConfigurations/ipconfig1')]"
-                                    },
-                                    "deleteOption": "Delete"
-                                },
-                                "type": "Microsoft.Network/publicIPAddresses",
-                                "sku": {
-                                    "name": "Basic",
-                                    "tier": "Regional"
-                                }
-                            },
-                            "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('VNET_name'), 'StudentSubnet')]"
-                            },
-                            "primary": true,
-                            "privateIPAddressVersion": "IPv4",
-                            "applicationSecurityGroups": [
-                                {
-                                    "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', parameters('ASG_name'))]"
-                                }
-                            ]
-                        }
-                    }
-                ],
-                "dnsSettings": {
-                    "dnsServers": []
-                },
-                "enableAcceleratedNetworking": true,
-                "enableIPForwarding": false,
-                "disableTcpStateTracking": false,
-                "networkSecurityGroup": {
-                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('NSG_name'))]"
-                },
-                "nicType": "Standard"
-            }
+          ]
         }
+      },
+      {
+        "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+        "apiVersion": "2022-05-01",
+        "name": "[concat(parameters('NSG_name'), '/RDP')]",
+        "dependsOn": [
+          "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('NSG_name'))]",
+          "[resourceId('Microsoft.Network/applicationSecurityGroups', parameters('ASG_name'))]"
+        ],
+        "properties": {
+          "protocol": "TCP",
+          "sourcePortRange": "*",
+          "destinationPortRange": "3389",
+          "sourceAddressPrefix": "[parameters('My_Client_PIPA')]",
+          "access": "Allow",
+          "priority": 300,
+          "direction": "Inbound",
+          "sourcePortRanges": [],
+          "destinationPortRanges": [],
+          "sourceAddressPrefixes": [],
+          "destinationAddressPrefixes": [],
+          "destinationApplicationSecurityGroups": [
+            {
+              "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', parameters('ASG_name'))]"
+            }
+          ]
+        }
+      },
+      {
+        "type": "Microsoft.Network/networkInterfaces",
+        "apiVersion": "2022-05-01",
+        "name": "[parameters('NIC_name')]",
+        "location": "[parameters('VM_location')]",
+        "dependsOn": [
+          "[resourceId('Microsoft.Network/publicIPAddresses', parameters('PIPA_name'))]",
+          "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('VNET_name'), 'StudentSubnet')]",
+          "[resourceId('Microsoft.Network/applicationSecurityGroups', parameters('ASG_name'))]",
+          "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('NSG_name'))]"
+        ],
+        "tags": "[parameters('VM_Tag')]",
+        "kind": "Regular",
+        "properties": {
+          "ipConfigurations": [
+            {
+              "name": "ipconfig1",
+              "id": "[concat(resourceId('Microsoft.Network/networkInterfaces', parameters('NIC_name')), '/ipConfigurations/ipconfig1')]",
+              "etag": "W/\"b9fa8dfd-8f3e-4d9a-9fd1-6037b5274d9d\"",
+              "type": "Microsoft.Network/networkInterfaces/ipConfigurations",
+              "properties": {
+                "provisioningState": "Succeeded",
+                "privateIPAddress": "192.168.0.252",
+                "privateIPAllocationMethod": "Dynamic",
+                "publicIPAddress": {
+                  "name": "StudentVM-ip",
+                  "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('PIPA_name'))]",
+                  "properties": {
+                    "provisioningState": "Succeeded",
+                    "resourceGuid": "ba49bfff-992f-4088-81c6-0a40bf964dcd",
+                    "publicIPAddressVersion": "IPv4",
+                    "publicIPAllocationMethod": "Static",
+                    "idleTimeoutInMinutes": 4,
+                    "ipTags": [],
+                    "ipConfiguration": {
+                      "id": "[concat(resourceId('Microsoft.Network/networkInterfaces', parameters('NIC_name')), '/ipConfigurations/ipconfig1')]"
+                    },
+                    "deleteOption": "Delete"
+                  },
+                  "type": "Microsoft.Network/publicIPAddresses",
+                  "sku": {
+                    "name": "Basic",
+                    "tier": "Regional"
+                  }
+                },
+                "subnet": {
+                  "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('VNET_name'), 'StudentSubnet')]"
+                },
+                "primary": true,
+                "privateIPAddressVersion": "IPv4",
+                "applicationSecurityGroups": [
+                  {
+                    "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', parameters('ASG_name'))]"
+                  }
+                ]
+              }
+            }
+          ],
+          "dnsSettings": {
+            "dnsServers": []
+          },
+          "enableAcceleratedNetworking": true,
+          "enableIPForwarding": false,
+          "disableTcpStateTracking": false,
+          "networkSecurityGroup": {
+            "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('NSG_name'))]"
+          },
+          "nicType": "Standard"
+        }
+      }
     ]
-}
+  }
