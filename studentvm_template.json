@@ -6,14 +6,6 @@
             "defaultValue": "StudentVM",
             "type": "string"
         },
-        "Admin_username": {
-            "defaultValue": "Student",
-            "type": "string"
-        },
-        "Admin_password": {
-            "defaultValue": "Pa55w.rd1234",
-            "type": "securestring"
-        },
         "VNET_name": {
             "defaultValue": "StudentVM-VNet",
             "type": "string"
@@ -71,9 +63,7 @@
             "apiVersion": "2022-05-01",
             "name": "[parameters('ASG_name')]",
             "location": "[parameters('VM_location')]",
-            "tags": {
-                "[parameters('VM_Tag')]"
-            },
+            "tags": "[parameters('VM_Tag')]",
             "properties": {}
         },
         {
@@ -81,9 +71,7 @@
             "apiVersion": "2022-05-01",
             "name": "[parameters('PIPA_name')]",
             "location": "[parameters('VM_location')]",
-            "tags": {
-                "[parameters('VM_Tag')]"
-            },
+            "tags": "[parameters('VM_Tag')]",
             "sku": {
                 "name": "Standard",
                 "tier": "Regional"
@@ -108,9 +96,7 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkInterfaces', parameters('NIC_name'))]"
             ],
-            "tags": {
-                "[parameters('VM_Tag')]"
-            },
+            "tags":"[parameters('VM_Tag')]",
             "properties": {
                 "hardwareProfile": {
                     "vmSize": "[parameters('VM_Size')]"
@@ -138,7 +124,7 @@
                 },
                 "osProfile": {
                     "computerName": "[parameters('VM_name')]",
-                    "adminUsername": "[parameters('Admin_username')]",
+                    "adminUsername": "Student",
                     "windowsConfiguration": {
                         "provisionVMAgent": true,
                         "enableAutomaticUpdates": true,
@@ -174,9 +160,7 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('VNET_name'), 'StudentSubnet')]"
             ],
-            "tags": {
-                "[parameters('VM_Tag')]"
-            },
+            "tags": "[parameters('VM_Tag')]",
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
@@ -223,9 +207,7 @@
                 "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', parameters('NSG_name'), 'RDP')]",
                 "[resourceId('Microsoft.Network/applicationSecurityGroups', parameters('ASG_name'))]"
             ],
-            "tags": {
-                "[parameters('VM_Tag')]"
-            },
+            "tags": "[parameters('VM_Tag')]",
             "properties": {
                 "securityRules": [
                     {
@@ -292,9 +274,7 @@
                 "[resourceId('Microsoft.Network/applicationSecurityGroups', parameters('ASG_name'))]",
                 "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('NSG_name'))]"
             ],
-            "tags": {
-                "[parameters('VM_Tag')]"
-            },
+            "tags": "[parameters('VM_Tag')]",
             "kind": "Regular",
             "properties": {
                 "ipConfigurations": [
