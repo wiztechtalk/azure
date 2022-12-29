@@ -6,6 +6,14 @@
             "defaultValue": "StudentVM",
             "type": "string"
         },
+        "Admin_username": {
+            "defaultValue": "Student",
+            "type": "string"
+        },
+        "Admin_password": {
+            "defaultValue": "Pa55w.rd1234",
+            "type": "securestring"
+        },
         "VNET_name": {
             "defaultValue": "StudentVM-VNet",
             "type": "string"
@@ -130,7 +138,7 @@
                 },
                 "osProfile": {
                     "computerName": "[parameters('VM_name')]",
-                    "adminUsername": "Student",
+                    "adminUsername": "[parameters('Admin_username')]",
                     "windowsConfiguration": {
                         "provisionVMAgent": true,
                         "enableAutomaticUpdates": true,
