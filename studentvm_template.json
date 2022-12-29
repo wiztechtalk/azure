@@ -1,6 +1,6 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.1",
+    "contentVersion": "1.0.0.2",
     "parameters": {
       "VM_name": {
         "defaultValue": "StudentVM",
@@ -376,5 +376,19 @@
           "nicType": "Standard"
         }
       }
-    ]
+    ],
+    "outputs": {
+        "Instructions": {
+            "type":"string",
+            "value": "[concat('The Client IP ',parameters('My_Client_PIPA'),' has been allowed to RDP to hostname using username and password set')]"
+        },
+        "hostname": {
+          "type": "string",
+          "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', parameters('PIPA_name'))).dnsSettings.fqdn]"
+        },
+        "username": {
+            "type":"string",
+            "value": "[parameters('adminUsername')]"
+        }     
+      }
   }
